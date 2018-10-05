@@ -1107,6 +1107,17 @@ class KubeSpawner(Spawner):
         """
     )
 
+    request_timeout = Integer(
+        60,
+        config=True,
+        help="""
+        Network timeout for kubernetes watch.
+
+        Trigger watch reconnect when a given request is taking too long,
+        which can indicate network issues.
+        """
+    )
+
     # deprecate redundant and inconsistent singleuser_ and user_ prefixes:
     _deprecated_traits = [
         "singleuser_working_dir",
@@ -1462,6 +1473,8 @@ class KubeSpawner(Spawner):
 
     @run_on_executor
     def asynchronize(self, method, *args, **kwargs):
+        if '_request_timeout' not in kwargs:
+            kwargs['_request_timeout'] = self.request_timeout
         return method(*args, **kwargs)
 
     @property
